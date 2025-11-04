@@ -125,6 +125,10 @@
   <ItemGroup>
     <ClCompile Include="RaylibTest.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="m5x7.ttf" />
+    <Font Include="Roboto.ttf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
