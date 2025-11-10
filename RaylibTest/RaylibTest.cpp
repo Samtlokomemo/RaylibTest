@@ -91,6 +91,15 @@ struct Upgrade {
         : name(n), cost(c), type(t), multiplier(m), targetItemIndex(target) {};
 };
 
+struct FloatingText {
+    Vector2 position;
+    float lifetime;
+    string text;
+
+    FloatingText(Vector2 pos, float life, string txt)
+        : position(pos), lifetime(life), text(txt) {}
+};
+
 typedef enum TextAlignment {
     ALIGN_LEFT      = 0,
     ALIGN_TOP       = 0,
@@ -120,6 +129,10 @@ int main() {
     double caios = 99;
     double totalCPS = 0.0;
     double clickPower = 1.0;
+
+    // Texto do clique
+    vector<FloatingText> floatingTexts;
+    const float ftextLifetime = 0.5f;
 
     // Upgrades
     vector<Upgrade> upgrades;
@@ -180,6 +193,7 @@ int main() {
     
     // GameLoop
     while (WindowShouldClose() == false) {
+
         MousePos = GetMousePosition();
 
         // Cálculo dos caios
@@ -198,6 +212,25 @@ int main() {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                     button.radius += 10;
                     caios += clickPower;
+
+                    string textToShow = TextFormat("+%.0f", clickPower);
+                    floatingTexts.push_back(FloatingText(MousePos, ftextLifetime, textToShow));
+                }
+            }
+
+            for (int i = 0; i < floatingTexts.size(); i++)
+            {
+                // Pega o texto atual
+                FloatingText& txt = floatingTexts[i];
+
+                // Atualiza o timer e a posição
+                txt.lifetime -= GetFrameTime();
+                txt.position.y -= 20 * GetFrameTime(); // Flutua para cima
+
+                // Se o tempo de vida acabou, apaga ele da lista
+                if (txt.lifetime <= 0)
+                {
+                    floatingTexts.erase(floatingTexts.begin() + i);
                 }
             }
 
@@ -272,6 +305,17 @@ int main() {
 
                     // Botão do caio
                     DrawCircle(button.position.x, button.position.y, button.radius, button.color);
+
+                    // Texto do clique
+                    for (const auto& txt : floatingTexts) // 'const auto&' é um jeito rápido e eficiente
+                    {
+                        // Calcula o fade para ESTE texto
+                        float fadeAlpha = txt.lifetime / ftextLifetime;
+                        Color fadeColor = Fade(WHITE, fadeAlpha);
+
+                        // Desenha ESTE texto
+                        DrawText(txt.text.c_str(), txt.position.x, txt.position.y, 20, fadeColor);
+                    }
                 } break;
                 case SHOP:
                 {
