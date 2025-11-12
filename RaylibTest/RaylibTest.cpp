@@ -3,8 +3,11 @@
 #include <iostream>
 #include <raylib.h>
 #include <vector>
+#include <deque>
+#include <set>
 #include <String>
 #include "raymath.h"
+
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
@@ -81,7 +84,6 @@ enum upgradeType {
 struct Upgrade {
     string name;
     double cost;
-    bool isPurchased = false;
 
     upgradeType type;
     float multiplier;
@@ -126,7 +128,7 @@ int main() {
     GameScreen currentScreen = GAMEPLAY;
 
     // Moeda
-    double caios = 99;
+    double caios = 99999999999;
     double totalCPS = 0.0;
     double clickPower = 1.0;
 
@@ -137,7 +139,19 @@ int main() {
     // Upgrades
     vector<Upgrade> upgrades;
     upgrades.push_back(Upgrade("Trufa do sebastião", 100, ClickUpgrade, 2.0f));
-    upgrades.push_back(Upgrade("Brownie do Kleber", 500, ClickUpgrade, 5.0f));
+    upgrades.push_back(Upgrade("Brownie do Kleber", 500, ClickUpgrade, 2.5f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
+    upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
     upgrades.push_back(Upgrade("Almoço do CDR", 1000, ClickUpgrade, 10.0f));
 
     // Itens
@@ -160,7 +174,7 @@ int main() {
     // Timers
 
     // UI
-    float uiX = 450.f, uiY = 10.f, buttonWidth = 300.f, buttonHeight = 50.f, buttonSpacing = 2.f;
+    float uiX = 450.f, uiY = 10.f, buttonWidth = 312.f, buttonHeight = 50.f, buttonSpacing = 2.f;
 
     // Textos
     Font font = LoadFontEx("m5x7.ttf", 72, 0, 250);
@@ -359,67 +373,63 @@ int main() {
                         // Define o tamanho dos botões quadrados
                         float upgradeSize = 48.0f;
                         float upgradeSpacing = 4.0f;
+                        float buttonY = 0.f, buttonX = 0.f;
 
                         for (int i = 0; i < upgrades.size(); i++)
                         {
                             Upgrade& upg = upgrades[i];
 
                             // SÓ MOSTRE O UPGRADE SE ELE NÃO FOI COMPRADO
-                            if (!upg.isPurchased)
+                            // Calcula a posição X (horizontal)
+                            buttonX = uiX + (i % 6) * (upgradeSize + upgradeSpacing);
+                            // A posição Y é fixa (no topo da coluna)
+                            buttonY = uiY + (i / 6) * (upgradeSize + upgradeSpacing);
+                                
+
+                            Rectangle buttonRect = { buttonX, buttonY, upgradeSize, upgradeSize };
+
+                            if (caios < upg.cost) GuiDisable();
+
+                            // --- Problema de Texto vs. Ícone ---
+                            // Texto (nome/custo) não cabe em um quadrado de 48x48.
+                            // O Cookie Clicker usa ÍCONES.
+                            // Solução: Usamos a primeira letra e mostramos o resto com um "Tooltip".
+                            const char* iconText = TextFormat("%c", upg.name[0]);
+                            const char* toolTipText = TextFormat("%s | Custo: %.0f", upg.name.c_str(), upg.cost);
+
+                            // Mostra o "tooltip" se o mouse estiver em cima
+                            if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
                             {
-                                // Calcula a posição X (horizontal)
-                                float buttonX = uiX + (i * (upgradeSize + upgradeSpacing));
-                                // A posição Y é fixa (no topo da coluna)
-                                float buttonY = uiY;
-
-                                Rectangle buttonRect = { buttonX, buttonY, upgradeSize, upgradeSize };
-
-                                if (caios < upg.cost) GuiDisable();
-
-                                // --- Problema de Texto vs. Ícone ---
-                                // Texto (nome/custo) não cabe em um quadrado de 48x48.
-                                // O Cookie Clicker usa ÍCONES.
-                                // Solução: Usamos a primeira letra e mostramos o resto com um "Tooltip".
-                                const char* iconText = TextFormat("%c", upg.name[0]);
-                                const char* toolTipText = TextFormat("%s | Custo: %.0f", upg.name.c_str(), upg.cost);
-
-                                // Mostra o "tooltip" se o mouse estiver em cima
-                                if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
-                                {
-                                    GuiTooltip(buttonRect);
-                                }
-
-                                // Desenha o botão e checa o clique
-                                if (GuiButton(buttonRect, iconText))
-                                {
-                                    caios -= upg.cost;
-                                    upg.isPurchased = true;
-                                    if (upg.type == ClickUpgrade)
-                                    {
-                                        clickPower *= upg.multiplier;
-                                    }
-                                    else if (upg.type == ItemUpgrade)
-                                    {
-                                        int targetIndex = upg.targetItemIndex;
-                                        // Checa se o índice é válido
-                                        if (targetIndex >= 0 && targetIndex < itens.size())
-                                        {
-                                            itens[targetIndex].currentMultiplier *= upg.multiplier;
-                                        }
-                                    }
-                                }
-                                GuiEnable();
+                                GuiTooltip(buttonRect);
                             }
-                        }
-                    }
 
+                            // Desenha o botão e checa o clique
+                            if (GuiButton(buttonRect, iconText))
+                            {
+                                caios -= upg.cost;
+                                if (upg.type == ClickUpgrade)
+                                {
+                                    clickPower *= upg.multiplier;
+                                }
+                                else if (upg.type == ItemUpgrade)
+                                {
+                                    int targetIndex = upg.targetItemIndex;
+                                    // Checa se o índice é válido
+                                    if (targetIndex >= 0 && targetIndex < itens.size())
+                                    {
+                                        itens[targetIndex].currentMultiplier *= upg.multiplier;
+                                    }
+                                }
+                                upgrades.erase(upgrades.begin() + i);
+                            }
+                            GuiEnable();
+                        }
 
                     // --- 3. ÁREA DOS ITENS (OS RETÂNGULOS) ---
                     // Agora, desenhamos a lista de itens ABAIXO da barra de upgrades.
-                    {
                         // Define a posição Y inicial para os itens
                         // (Abaixo dos upgrades + 10 pixels de espaço)
-                        float itemUiY = uiY + 48.0f + 10.0f;
+                        float itemUiY = uiY + buttonY + 42.0f;
 
                         // Define o estilo dos botões de item
                         GuiSetStyle(DEFAULT, TEXT_SIZE, 12);
@@ -433,8 +443,8 @@ int main() {
                             // --- CORREÇÃO DE BUG ---
                             // Seu cálculo `(buttonHeight * buttonSpacing)` estava errado.
                             // O correto é `i * (altura + espaço)`.
-                            float buttonY = itemUiY + (i * (buttonHeight + buttonSpacing));
-                            Rectangle buttonRect = { uiX, buttonY, buttonWidth, buttonHeight };
+                            float itemY = itemUiY + (i * (buttonHeight + buttonSpacing));
+                            Rectangle buttonRect = { uiX, itemY, buttonWidth, buttonHeight };
                             if (caios < item.currentCost) GuiDisable();
                             const char* buttonText = TextFormat("%s (%d) | Custo: %.0f",
                                 item.name.c_str(),
