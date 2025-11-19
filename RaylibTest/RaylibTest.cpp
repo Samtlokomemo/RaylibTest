@@ -474,11 +474,13 @@ int main() {
             }
             // Textos dos valores
             {
-                GuiSetStyle(DEFAULT, TEXT_SIZE, 18);
-                GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-                GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
-                GuiLabel({ 0, screenHeight - 100, (float)screenWidth, 20 }, TextFormat("você tem %.0f caios", caios));
-                GuiLabel({ 0, screenHeight - 100, (float)screenWidth, 45 }, TextFormat("você ganha %.1f  caios por segundo", totalCPS));
+                if (currentScreen != LOGO && currentScreen != MENU) {
+                    GuiSetStyle(DEFAULT, TEXT_SIZE, 18);
+                    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+                    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+                    GuiLabel({ 0, screenHeight - 100, (float)screenWidth, 20 }, TextFormat("você tem %.0f caios", caios));
+                    GuiLabel({ 0, screenHeight - 100, (float)screenWidth, 45 }, TextFormat("você ganha %.1f  caios por segundo", totalCPS));
+                }
             }
         EndDrawing();
         }
